@@ -406,7 +406,7 @@ if ($Exec) {
                      read_expected($Exec . ".cc"),
                      $ofile, $Exec . ".cc", $Exec, $out));
 } else {
-    my($maxtest, $ntest, $ntestfailed) = (39, 0, 0);
+    my($maxtest, $ntest, $ntestfailed) = (40, 0, 0);
     if ($Test) {
         for ($i = 1; $i <= $maxtest; $i += 1) {
             printf "test%03d\n", $i if test_runnable($i)
