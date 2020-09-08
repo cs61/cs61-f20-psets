@@ -214,6 +214,8 @@ sub read_expected ($) {
                     $m->{r} .= quotemeta($x);
                 }
             }
+            $m->{r} .= "\\s*";
+            $m->{r} =~ s{\A(?:\\ )+}{\\s*};
             push @expected, $m;
             $skippable = 0;
         }
