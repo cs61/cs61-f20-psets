@@ -6,22 +6,22 @@
 // heap_min and heap_max checking, more allocations.
 
 int main() {
-    uintptr_t heap_min = 0;
-    uintptr_t heap_max = 0;
+    uintptr_t heap_first = 0;
+    uintptr_t heap_last = 0;
     for (int i = 0; i != 100; ++i) {
         size_t sz = rand() % 100;
         char* p = (char*) malloc(sz);
-        if (!heap_min || heap_min > (uintptr_t) p) {
-            heap_min = (uintptr_t) p;
+        if (!heap_first || heap_first > (uintptr_t) p) {
+            heap_first = (uintptr_t) p;
         }
-        if (!heap_max || heap_max < (uintptr_t) p + sz) {
-            heap_max = (uintptr_t) p + sz;
+        if (!heap_last || heap_last < (uintptr_t) p + sz) {
+            heap_last = (uintptr_t) p + sz;
         }
         free(p);
     }
 
     m61_statistics stat;
     m61_get_statistics(&stat);
-    assert(heap_min >= stat.heap_min);
-    assert(heap_max <= stat.heap_max);
+    assert(stat.heap_min <= heap_first);
+    assert(heap_last - 1 <= stat.heap_max);
 }
