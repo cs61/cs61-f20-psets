@@ -149,7 +149,7 @@ run-graphic: $(QEMUIMAGEFILES) check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::12949 $(QEMUIMG),QEMU $<)
 run-console: $(QEMUIMAGEFILES) check-qemu-console
 	@echo '* Run `gdb -x build/weensyos.gdb` to connect gdb to qemu.' 1>&2
-	$(call run,$(QEMU) $(QEMUOPT) -curses -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+	$(call run,$(QEMU) $(QEMUOPT) -curses -serial mon:stdio -gdb tcp::12949 $(QEMUIMG),QEMU $<)
 run-monitor: $(QEMUIMAGEFILES) check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -monitor stdio $(QEMUIMG),QEMU $<)
 run-gdb: run-gdb-$(QEMUDISPLAY)
@@ -158,7 +158,7 @@ run-gdb-graphic: $(QEMUIMAGEFILES) check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::12949 $(QEMUIMG) &,QEMU $<)
 	$(call run,sleep 0.5; gdb -x build/weensyos.gdb,GDB)
 run-gdb-console: $(QEMUIMAGEFILES) check-qemu-console
-	$(call run,$(QEMU) $(QEMUOPT) -curses -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+	$(call run,$(QEMU) $(QEMUOPT) -curses -serial mon:stdio -gdb tcp::12949 $(QEMUIMG),QEMU $<)
 
 run-$(RUNSUFFIX): run
 run-graphic-$(RUNSUFFIX): run-graphic
