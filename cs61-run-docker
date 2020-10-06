@@ -28,7 +28,7 @@ if test -z "$maindir" && expr "${BASH_SOURCE[0]}" : / >/dev/null 2>&1; then
 fi
 
 if test -n "$maindir"; then
-    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "$maindir":/home/cs61-user/$destdir -w "/home/cs61-user/$destdir$subdir" cs61:latest
+    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "$maindir":/home/cs61-user/$destdir -w "/home/cs61-user/$destdir$subdir" --expose=12949/tcp -p 12949:12949/tcp cs61:latest
 else
-    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined cs61:latest
+    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --expose=12949/tcp -p 12949:12949/tcp cs61:latest
 fi
