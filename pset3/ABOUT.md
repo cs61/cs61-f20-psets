@@ -36,20 +36,23 @@ but only version 5 or later.
 **Mac OS X:** WeensyOS can build on Mac OS X after some tools are installed.
 
 1. Install [Homebrew].
+
 2. Install Homebrew’s new GCC package: `brew install gcc`
+
 3. Install Homebrew’s QEMU: `brew install qemu`
 4. Tap [Sergio Benitez’s collection of cross-compilers](https://github.com/SergioBenitez/homebrew-osxct): `brew tap SergioBenitez/osxct`
+
 5. Install the `x86_64-unknown-linux-gnu` cross-compiler toolchain: `brew install x86_64-unknown-linux-gnu`
+
 6. Create a file `config.mk` in this directory containing this:
 
     ```make
-CCPREFIX=x86_64-unknown-linux-gnu-
-HOSTCC=gcc-8
-HOSTCXX=g++-8
-```
+    CCPREFIX=x86_64-unknown-linux-gnu-
+    HOSTCC=gcc-8
+    HOSTCXX=g++-8
+    ```
 
-    (Do not `git add config.mk`: it is intended for local
-    configuration.)
+    (Do not `git add config.mk`: it is intended for local configuration.)
 
 Troubleshooting
 ---------------
@@ -64,10 +67,10 @@ OS has become unresponsive).
   press `Alt-2`. This will bring up the QEMU Monitor, which looks like this:
 
     ```
-compat_monitor0 console
-QEMU 4.2.0 monitor - type 'help' for more information
-(qemu)
-```
+    compat_monitor0 console
+    QEMU 4.2.0 monitor - type 'help' for more information
+    (qemu)
+    ```
 
     Type `quit` and hit Return to kill the embedded OS and return to your
     shell. If this leaves the terminal looking funny, enter the `reset` shell
