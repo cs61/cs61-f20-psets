@@ -40,7 +40,7 @@ but only version 5 or later.
 3. Install Homebrew’s QEMU: `brew install qemu`
 4. Tap [Sergio Benitez’s collection of cross-compilers](https://github.com/SergioBenitez/homebrew-osxct): `brew tap SergioBenitez/osxct`
 5. Install the `x86_64-unknown-linux-gnu` cross-compiler toolchain: `brew install x86_64-unknown-linux-gnu`
-6. Edit the file `config.mk` in your Chickadee directory to contain this:
+6. Create a file `config.mk` in this directory containing this:
 
     ```make
 CCPREFIX=x86_64-unknown-linux-gnu-
@@ -100,7 +100,7 @@ more fundamental issues.
 | File            | Description                            |
 | --------------- | -------------------------------------- |
 | `types.h`       | Type definitions                       |
-| `lib.hh/cc`     | Chickadee C library                    |
+| `lib.hh/cc`     | C library                              |
 | `x86-64.h`      | x86-64 hardware definitions            |
 | `elf.h`         | ELF64 structures for loading programs  |
 
