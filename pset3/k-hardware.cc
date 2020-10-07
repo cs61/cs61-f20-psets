@@ -178,6 +178,12 @@ void init_interrupts() {
     assert(apic_base & IA32_APIC_BASE_ENABLED);
     assert((apic_base & 0xFFFFFFFFF000) == lapicstate::lapic_pa);
 
+    // ensure machine has an IOAPIC
+    auto& ioapic = ioapicstate::get();
+    uint32_t ioapic_ver = ioapic.read(ioapic.reg_ver);
+    assert((ioapic_ver & 0xFF) == 0x11 || (ioapic_ver & 0xFF) == 0x20);
+    assert((ioapic_ver >> 16) >= 0x17);
+
     // disable the old programmable interrupt controller
 #define IO_PIC1         0x20    // Master (IRQs 0-7)
 #define IO_PIC2         0xA0    // Slave (IRQs 8-15)
@@ -463,14 +469,14 @@ void console_show_cursor(int cpos) {
 #define MOD_CONTROL     (1 << 1)
 #define MOD_CAPSLOCK    (1 << 3)
 
-#define KEY_SHIFT       0372
-#define KEY_CONTROL     0373
-#define KEY_ALT         0374
-#define KEY_CAPSLOCK    0375
-#define KEY_NUMLOCK     0376
-#define KEY_SCROLLLOCK  0377
+#define KEY_SHIFT       0xFA
+#define KEY_CONTROL     0xFB
+#define KEY_ALT         0xFC
+#define KEY_CAPSLOCK    0xFD
+#define KEY_NUMLOCK     0xFE
+#define KEY_SCROLLLOCK  0xFF
 
-#define CKEY(cn)        0x80 + cn
+#define CKEY(cn)        (0x80 + cn)
 
 static const uint8_t keymap[256] = {
     /*0x00*/ 0, 033, CKEY(0), CKEY(1), CKEY(2), CKEY(3), CKEY(4), CKEY(5),
@@ -501,18 +507,18 @@ static const uint8_t keymap[256] = {
 static const struct keyboard_key {
     uint8_t map[4];
 } complex_keymap[] = {
-    /*CKEY(0)*/ {{'1', '!', 0, 0}},  /*CKEY(1)*/ {{'2', '@', 0, 0}},
-    /*CKEY(2)*/ {{'3', '#', 0, 0}},  /*CKEY(3)*/ {{'4', '$', 0, 0}},
-    /*CKEY(4)*/ {{'5', '%', 0, 0}},  /*CKEY(5)*/ {{'6', '^', 0, 036}},
-    /*CKEY(6)*/ {{'7', '&', 0, 0}},  /*CKEY(7)*/ {{'8', '*', 0, 0}},
-    /*CKEY(8)*/ {{'9', '(', 0, 0}},  /*CKEY(9)*/ {{'0', ')', 0, 0}},
-    /*CKEY(10)*/ {{'-', '_', 0, 037}},  /*CKEY(11)*/ {{'=', '+', 0, 0}},
-    /*CKEY(12)*/ {{'[', '{', 033, 0}},  /*CKEY(13)*/ {{']', '}', 035, 0}},
+    /*CKEY(0)*/ {{'1', '!', 0, 0}},      /*CKEY(1)*/ {{'2', '@', 0, 0}},
+    /*CKEY(2)*/ {{'3', '#', 0, 0}},      /*CKEY(3)*/ {{'4', '$', 0, 0}},
+    /*CKEY(4)*/ {{'5', '%', 0, 0}},      /*CKEY(5)*/ {{'6', '^', 0, 0x1E}},
+    /*CKEY(6)*/ {{'7', '&', 0, 0}},      /*CKEY(7)*/ {{'8', '*', 0, 0}},
+    /*CKEY(8)*/ {{'9', '(', 0, 0}},      /*CKEY(9)*/ {{'0', ')', 0, 0}},
+    /*CKEY(10)*/ {{'-', '_', 0, 0x1F}},  /*CKEY(11)*/ {{'=', '+', 0, 0}},
+    /*CKEY(12)*/ {{'[', '{', 0x1B, 0}},  /*CKEY(13)*/ {{']', '}', 0x1D, 0}},
     /*CKEY(14)*/ {{'\n', '\n', '\r', '\r'}},
     /*CKEY(15)*/ {{';', ':', 0, 0}},
-    /*CKEY(16)*/ {{'\'', '"', 0, 0}},  /*CKEY(17)*/ {{'`', '~', 0, 0}},
-    /*CKEY(18)*/ {{'\\', '|', 034, 0}},  /*CKEY(19)*/ {{',', '<', 0, 0}},
-    /*CKEY(20)*/ {{'.', '>', 0, 0}},  /*CKEY(21)*/ {{'/', '?', 0, 0}}
+    /*CKEY(16)*/ {{'\'', '"', 0, 0}},    /*CKEY(17)*/ {{'`', '~', 0, 0}},
+    /*CKEY(18)*/ {{'\\', '|', 0x1C, 0}}, /*CKEY(19)*/ {{',', '<', 0, 0}},
+    /*CKEY(20)*/ {{'.', '>', 0, 0}},     /*CKEY(21)*/ {{'/', '?', 0, 0}}
 };
 
 int keyboard_readc() {

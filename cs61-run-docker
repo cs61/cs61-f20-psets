@@ -27,8 +27,19 @@ if test -z "$maindir" && expr "${BASH_SOURCE[0]}" : / >/dev/null 2>&1; then
     subdir=""
 fi
 
+netarg=
+if test `uname` = Darwin; then
+    if ! netstat -n -a -p tcp | grep '\.12949[ 	].*LISTEN' >/dev/null; then
+        netarg='--expose=12949/tcp -p 12949:12949/tcp'
+    fi
+elif test -x /bin/netstat; then
+    if ! netstat -n -l -t | grep ':12949[ 	]' >/dev/null; then
+        netarg='--expose=12949/tcp -p 12949:12949/tcp'
+    fi
+fi
+
 if test -n "$maindir"; then
-    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "$maindir":/home/cs61-user/$destdir -w "/home/cs61-user/$destdir$subdir" --expose=12949/tcp -p 12949:12949/tcp cs61:latest
+    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "$maindir":/home/cs61-user/$destdir -w "/home/cs61-user/$destdir$subdir" $netarg cs61:latest
 else
-    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --expose=12949/tcp -p 12949:12949/tcp cs61:latest
+    docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined cs61:latest
 fi
