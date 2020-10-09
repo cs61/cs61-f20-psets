@@ -33,6 +33,9 @@ QEMUOPT = -net none -parallel $(LOG) -smp $(NCPU)
 ifeq ($(D),1)
 QEMUOPT += -d int,cpu_reset,guest_errors -no-reboot
 endif
+ifneq ($(NOGDB),1)
+QEMUGDB ?= -gdb tcp::12949
+endif
 
 
 # Sets of object files
@@ -144,12 +147,12 @@ QEMUIMG = -M q35 \
 
 run: run-$(QEMUDISPLAY)
 	@:
-run-graphic: $(QEMUIMAGEFILES) check-qemu
-	@echo '* Run `gdb -x build/weensyos.gdb` to connect gdb to qemu.' 1>&2
-	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::12949 $(QEMUIMG),QEMU $<)
-run-console: $(QEMUIMAGEFILES) check-qemu-console
-	@echo '* Run `gdb -x build/weensyos.gdb` to connect gdb to qemu.' 1>&2
-	$(call run,$(QEMU) $(QEMUOPT) -curses -serial mon:stdio -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+run-gdb-report:
+	@if test "$(QEMUGDB)" = "-gdb tcp::12949"; then echo '* Run `gdb -x build/weensyos.gdb` to connect gdb to qemu.' 1>&2; fi
+run-graphic: $(QEMUIMAGEFILES) check-qemu run-gdb-report
+	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) $(QEMUGDB) $(QEMUIMG),QEMU $<)
+run-console: $(QEMUIMAGEFILES) check-qemu-console run-gdb-report
+	$(call run,$(QEMU) $(QEMUOPT) -curses $(QEMUGDB) $(QEMUIMG),QEMU $<)
 run-monitor: $(QEMUIMAGEFILES) check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -monitor stdio $(QEMUIMG),QEMU $<)
 run-gdb: run-gdb-$(QEMUDISPLAY)
@@ -158,7 +161,7 @@ run-gdb-graphic: $(QEMUIMAGEFILES) check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::12949 $(QEMUIMG) &,QEMU $<)
 	$(call run,sleep 0.5; gdb -x build/weensyos.gdb,GDB)
 run-gdb-console: $(QEMUIMAGEFILES) check-qemu-console
-	$(call run,$(QEMU) $(QEMUOPT) -curses -serial mon:stdio -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+	$(call run,$(QEMU) $(QEMUOPT) -curses -gdb tcp::12949 $(QEMUIMG),QEMU $<)
 
 run-$(RUNSUFFIX): run
 run-graphic-$(RUNSUFFIX): run-graphic

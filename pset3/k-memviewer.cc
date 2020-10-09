@@ -75,7 +75,7 @@ void memusage::refresh() {
     memset(v_, 0, (maxpa / PAGESIZE) * sizeof(*v_));
 
     // mark kernel page tables
-    for (ptiter it(kernel_pagetable); it.active(); it.next()) {
+    for (ptiter it(kernel_pagetable); !it.done(); it.next()) {
         mark(it.pa(), f_kernel);
     }
     mark(kptr2pa(kernel_pagetable), f_kernel);

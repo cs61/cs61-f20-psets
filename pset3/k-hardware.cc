@@ -88,7 +88,7 @@ static void set_gate(x86_64_gatedescriptor* gate, uintptr_t addr,
     gate->gd_high = addr >> 32;
 }
 
-x86_64_pagetable kernel_pagetable[6];
+x86_64_pagetable kernel_pagetable[5];
 static uint64_t gdt_segments[7];
 
 void init_kernel_memory() {
@@ -136,17 +136,6 @@ void init_kernel_memory() {
             it.map(it.va(), PTE_P | PTE_W | PTE_U);
         }
     }
-
-    // additional kernel-accessible mappings for high canonical memory
-    // (unused in current WeensyOS)
-    kernel_pagetable[0].entry[256] =
-        kptr2pa(&kernel_pagetable[1]) | PTE_P | PTE_W;
-    kernel_pagetable[0].entry[511] =
-        kptr2pa(&kernel_pagetable[5]) | PTE_P | PTE_W;
-    kernel_pagetable[5].entry[510] =
-        kernel_pagetable[1].entry[0];
-    kernel_pagetable[5].entry[511] =
-        kernel_pagetable[1].entry[1];
 
     wrcr3(kptr2pa(kernel_pagetable));
 
@@ -300,9 +289,7 @@ void init_timer(int rate) {
 x86_64_pagetable* kalloc_pagetable() {
     x86_64_pagetable* pt = reinterpret_cast<x86_64_pagetable*>(kalloc(PAGESIZE));
     if (pt) {
-        memset(&pt->entry[0], 0, sizeof(x86_64_pageentry_t) * 256);
-        memcpy(&pt->entry[256], &kernel_pagetable->entry[256],
-               sizeof(x86_64_pageentry_t) * 256);
+        memset(&pt->entry[0], 0, sizeof(x86_64_pageentry_t) * 512);
     }
     return pt;
 }

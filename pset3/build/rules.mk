@@ -156,7 +156,7 @@ always:
 # These targets don't correspond to files
 .PHONY: all always clean realclean distclean cleanfs fsck \
 	run run-graphic run-console run-monitor \
-	run-gdb run-gdb-graphic run-gdb-console \
+	run-gdb run-gdb-graphic run-gdb-console run-gdb-report \
 	check-qemu-console check-qemu kill \
 	run-% run-graphic-% run-console-% run-monitor-% \
 	run-gdb-% run-gdb-graphic-% run-gdb-console-%

@@ -19,9 +19,11 @@ class vmiter {
     inline uintptr_t va() const;
     // Return one past last virtual address in this mapping range
     inline uintptr_t last_va() const;
-    // Return physical address mapped at `va()`
+    // Return physical address mapped at `va()`,
+    // or `(uintptr_t) -1` if `va()` is unmapped.
     inline uint64_t pa() const;
-    // Return a kernel-accessible pointer corresponding to `pa()`
+    // Return a kernel-accessible pointer corresponding to `pa()`,
+    // or `nullptr` if `va()` is unmapped.
     template <typename T = void*>
     inline T kptr() const;
 
@@ -81,12 +83,12 @@ class vmiter {
 // returning them in depth-first order.
 // This is mainly useful when freeing a page table, as in:
 // ```
-// for (ptiter it(pt); it.active(); it.next()) {
+// for (ptiter it(pt); !it.done(); it.next()) {
 //     kfree(it.kptr());
 // }
 // kfree(pt);
 // ```
-// Note that `ptiter` will never visit the level 4 page table page.
+// Note that `ptiter` will never visit the root (level-4) page table page.
 
 class ptiter {
   public:
@@ -94,22 +96,25 @@ class ptiter {
     inline ptiter(x86_64_pagetable* pt);
     inline ptiter(const proc* p);
 
-    // Return true iff `ptiter` is still active.
-    inline bool active() const;
+    // Return true once `ptiter` has iterated over all page table pages
+    // (not including the top-level page table page).
+    inline bool done() const;
+
+    // Return physical address of current page table page.
+    inline uintptr_t pa() const;
+    // Return kernel-accessible pointer to the current page table page.
+    inline x86_64_pagetable* kptr() const;
+    // Move to next page table page in depth-first order.
+    inline void next();
 
     // Return current virtual address
     inline uintptr_t va() const;
     // Return one past the last virtual address in this mapping range
     inline uintptr_t last_va() const;
-    // Return level of current page table page (0-2).
+    // Return level of current page table page (0-2)
     inline int level() const;
-    // Return kernel pointer to the current page table page.
-    inline x86_64_pagetable* kptr() const;
-    // Return physical address of current page table page.
-    inline uintptr_t pa() const;
 
-    // Move to next page table page in depth-first order.
-    inline void next();
+    [[deprecated]] inline bool active() const;
 
   private:
     x86_64_pagetable* pt_;
@@ -148,7 +153,11 @@ inline uint64_t vmiter::pa() const {
 }
 template <typename T>
 inline T vmiter::kptr() const {
-    return reinterpret_cast<T>(pa());
+    if (*pep_ & PTE_P) {
+        return reinterpret_cast<T>(pa());
+    } else {
+        return nullptr;
+    }
 }
 inline uint64_t vmiter::perm() const {
     if (*pep_ & PTE_P) {
@@ -203,8 +212,11 @@ inline uintptr_t ptiter::va() const {
 inline uintptr_t ptiter::last_va() const {
     return (va_ | pageoffmask(level_)) + 1;
 }
+inline bool ptiter::done() const {
+    return va_ > VA_NONCANONMAX;
+}
 inline bool ptiter::active() const {
-    return va_ <= VA_NONCANONMAX;
+    return !done();
 }
 inline int ptiter::level() const {
     return level_ - 1;
