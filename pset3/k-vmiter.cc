@@ -27,7 +27,7 @@ uint64_t vmiter::range_perm(size_t sz) const {
 
 void vmiter::down() {
     while (level_ > 0 && (*pep_ & (PTE_P | PTE_PS)) == PTE_P) {
-        perm_ &= *pep_;
+        perm_ &= *pep_ | ~(PTE_P | PTE_W | PTE_U);
         --level_;
         uintptr_t pa = *pep_ & PTE_PAMASK;
         x86_64_pagetable* pt = reinterpret_cast<x86_64_pagetable*>(pa);
