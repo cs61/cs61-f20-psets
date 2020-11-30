@@ -344,7 +344,7 @@ int main(int argc, char** argv) {
     } else if (optind != argc) {
         usage();
     }
-    if (strcmp(pong_user, "test") == 0) {
+    if (strcmp(pong_user, "proxy-minlan-test") == 0) {
         fprintf(stderr, "You must pick your own PONG_USER first!\n");
         fprintf(stderr, "Edit `serverinfo.h` to pick a PONG_USER.\n");
     }
