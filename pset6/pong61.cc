@@ -305,7 +305,7 @@ static struct addrinfo* lookup_tcp_server(const char* host, int port) {
 // usage()
 //    Explain how pong61 should be run.
 static void usage() {
-    fprintf(stderr, "Usage: ./pong61 [-h HOST] [-p PORT] [-x] [USER]\n");
+    fprintf(stderr, "Usage: ./pong61 [-h HOST] [-p PORT] [-l LATENCY] [-x] [USER]\n");
     exit(1);
 }
 
@@ -317,7 +317,8 @@ int main(int argc, char** argv) {
     int ch;
     bool nocheck = false, fast = false, proxy = false,
         has_host = false, has_port = false;
-    while ((ch = getopt(argc, argv, "nfxh:p:u:")) != -1) {
+    unsigned long latency = 0;
+    while ((ch = getopt(argc, argv, "nfxh:p:u:l:")) != -1) {
         if (ch == 'h') {
             pong_host = optarg;
             has_host = true;
@@ -329,6 +330,12 @@ int main(int argc, char** argv) {
             has_port = true;
         } else if (ch == 'u') {
             pong_user = optarg;
+        } else if (ch == 'l') {
+            char* last;
+            latency = strtoul(optarg, &last, 0);
+            if (*last != '\0' || last == optarg) {
+                usage();
+            }
         } else if (ch == 'n') {
             nocheck = true;
         } else if (ch == 'f') {
@@ -364,11 +371,12 @@ int main(int argc, char** argv) {
     int width, height, delay = 100000;
     {
         http_connection* conn = http_connect(pong_addr);
-        if (!nocheck && !fast) {
+        if (!nocheck && !fast && !latency) {
             conn->send_request("reset");
         } else {
             char buf[256];
-            sprintf(buf, "reset?nocheck=%d&fast=%d", nocheck, fast);
+            sprintf(buf, "reset?nocheck=%d&fast=%d&latency=%lu",
+                    nocheck, fast, latency);
             conn->send_request(buf);
         }
         conn->receive_response_headers();
